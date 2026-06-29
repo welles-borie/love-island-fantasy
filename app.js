@@ -102,6 +102,8 @@ function keyPress(k) {
 
 function login(u) {
   state.currentUser=u;
+  state.selectedKnight=null;
+  state.selectedVillain=null;
   document.getElementById('page-auth').classList.remove('active');
   document.getElementById('nav').style.display='flex';
   if (USERS[u].isAdmin) document.getElementById('nav-admin').style.display='';
@@ -146,8 +148,8 @@ function isLocked() {
 function renderPicks() {
   var u=state.currentUser, wk=getWeekKey();
   var myPicks=((ldb.picks[u]||{})[wk])||{};
-  state.selectedKnight=myPicks.knight||null;
-  state.selectedVillain=myPicks.villain||null;
+  if (myPicks.knight) state.selectedKnight=myPicks.knight;
+  if (myPicks.villain) state.selectedVillain=myPicks.villain;
   var locked=isLocked();
   document.getElementById('deadline-note').textContent=locked?'🔒 Picks locked — episode in progress':'Lock-in by Monday 9:00 PM ET';
   var cur=document.getElementById('current-picks-display');
