@@ -202,9 +202,9 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, get, set, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
 
 const firebaseConfig = {
   apiKey: "AIzaSyCxYRAwHQG15OID_X4ywydiH5EE4jdUZek",
@@ -216,8 +216,8 @@ const firebaseConfig = {
   appId: "1:954154252319:web:a0504b91d2a9a620d23d2a"
 };
 
-const fireApp = initializeApp(firebaseConfig);
-const db = getDatabase(fireApp);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 const USERS = {
   OH: { pin: '1717', color: '#D4537E' },
@@ -255,7 +255,7 @@ function avatarColor(name) {
 function initials(name) { return name.slice(0,2).toUpperCase(); }
 
 async function loadFromFirebase() {
-  const snap = await get(ref(db, '/'));
+  const snap = await db.ref('/').get();
   if (snap.exists()) {
     const data = snap.val();
     ldb.contestants = data.contestants ? Object.values(data.contestants) : [];
@@ -273,10 +273,10 @@ async function pushAll() {
   const co = {}, eo = {};
   ldb.contestants.forEach(c => { co[c.id]=c; });
   ldb.episodes.forEach(e => { eo[e.id]=e; });
-  await set(ref(db,'/'), { contestants:co, episodes:eo, picks:ldb.picks, votes:ldb.votes, scores:ldb.scores });
+  await db.ref('/').set({ contestants:co, episodes:eo, picks:ldb.picks, votes:ldb.votes, scores:ldb.scores });
 }
 
-async function pushPath(path, val) { await set(ref(db, path), val); }
+async function pushPath(path, val) { await db.ref(path).set(val); }
 
 function buildAuthHTML() {
   return `<div class="auth-wrap">
@@ -455,7 +455,7 @@ window.castVote = async (epId,cid,type) => {
   const myVotes=Object.values(ev).filter(v=>v.user===u);
   const hasIck=myVotes.some(v=>v.type==='ick'), hasAww=myVotes.some(v=>v.type==='aww');
   if (ex) {
-    if (ex.type===type) { delete ldb.votes[epId][vk]; await remove(ref(db,`/votes/${epId}/${vk}`)); }
+    if (ex.type===type) { delete ldb.votes[epId][vk]; await db.ref(`/votes/${epId}/${vk}`).remove(); }
     else { ev[vk]={...ex,type,ts:Date.now()}; await pushPath(`/votes/${epId}/${vk}`,ev[vk]); }
   } else {
     if (myVotes.length>=5) return;
@@ -578,7 +578,7 @@ window.addEpisode = async () => {
 window.deleteEp = async id => {
   if (!confirm('Delete this episode?')) return;
   ldb.episodes=ldb.episodes.filter(e=>e.id!==id); delete ldb.votes[id];
-  await remove(ref(db,`/episodes/${id}`)); await remove(ref(db,`/votes/${id}`));
+  await db.ref(`/episodes/${id}`).remove(); await db.ref(`/votes/${id}`).remove();
   toast('Episode deleted'); renderAdmin();
 };
 
@@ -600,7 +600,7 @@ window.addContestant = async () => {
 window.deleteContestant = async id => {
   if (!confirm('Remove this contestant?')) return;
   ldb.contestants=ldb.contestants.filter(c=>c.id!==id);
-  await remove(ref(db,`/contestants/${id}`));
+  await db.ref(`/contestants/${id}`).remove();
   toast('Contestant removed'); renderAdmin();
 };
 
@@ -618,7 +618,7 @@ async function init() {
   await loadFromFirebase();
   document.getElementById('page-auth').innerHTML=buildAuthHTML();
   renderAuth();
-  onValue(ref(db,'/'), snap => {
+  db.ref('/').on('value', snap => {
     if (!snap.exists()) return;
     const data=snap.val();
     ldb.contestants=data.contestants?Object.values(data.contestants):[];
