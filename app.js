@@ -175,7 +175,17 @@ function renderPickGrid(elId,contestants,role,locked) {
   }).join('');
 }
 
-function selectPick(role,cid) { state['selected'+(role==='knight'?'Knight':'Villain')]=cid; renderPicks(); }
+function selectPick(role,cid) {
+  var key='selected'+(role==='knight'?'Knight':'Villain');
+  state[key]=cid;
+  var gridId=role+'-grid';
+  var cards=document.getElementById(gridId).querySelectorAll('.c-card');
+  cards.forEach(function(card){
+    card.classList.remove('sel-'+role);
+    var oc=card.getAttribute('onclick');
+    if(oc&&oc.indexOf("'"+cid+"'")!==-1){card.classList.add('sel-'+role);}
+  });
+}
 
 function savePicks() {
   var u=state.currentUser, wk=getWeekKey();
