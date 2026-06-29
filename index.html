@@ -238,8 +238,10 @@ const INIT_CONTESTANTS = [
   {name:'Aniya'}
 ];
 
-let state = { currentUser:null, pinEntry:'', selectedUser:null, selectedKnight:null, selectedVillain:null };
-let ldb = { contestants:[], episodes:[], picks:{}, votes:{}, scores:{OH:0,CS:0,RR:0} };
+window.state = { currentUser:null, pinEntry:'', selectedUser:null, selectedKnight:null, selectedVillain:null };
+window.ldb = { contestants:[], episodes:[], picks:{}, votes:{}, scores:{OH:0,CS:0,RR:0} };
+const state = window.state;
+const ldb = window.ldb;
 
 function toast(msg) {
   const t = document.getElementById('toast');
