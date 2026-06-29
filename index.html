@@ -186,7 +186,6 @@
       <h3>Contestants</h3>
       <div class="input-row">
         <input type="text" id="c-name-input" placeholder="Name" />
-        <input type="text" id="c-partner-input" placeholder="Partner (optional)" style="max-width:130px" />
         <button class="admin-btn add" onclick="addContestant()">Add</button>
       </div>
       <div id="c-list"></div>
@@ -228,15 +227,15 @@ const USERS = {
 };
 
 const INIT_CONTESTANTS = [
-  {name:'Jen',partner:'Gal'},{name:'Gal',partner:'Jen'},
-  {name:'Caleb',partner:'Jaiden'},{name:'Jaiden',partner:'Caleb'},
-  {name:'Kenzie',partner:'Dylan'},{name:'Dylan',partner:'Kenzie'},
-  {name:'Corbin',partner:'Parmida'},{name:'Parmida',partner:'Corbin'},
-  {name:'Kayda',partner:'Zach'},{name:'Zach',partner:'Kayda'},
-  {name:'Melanie',partner:'Sincere'},{name:'Sincere',partner:'Melanie'},
-  {name:'Trinity',partner:'Bryce'},{name:'Bryce',partner:'Trinity'},
-  {name:'KC',partner:'Tierra'},{name:'Tierra',partner:'KC'},
-  {name:'Aniya',partner:''}
+  {name:'Jen'},{name:'Gal'},
+  {name:'Caleb'},{name:'Jaiden'},
+  {name:'Kenzie'},{name:'Dylan'},
+  {name:'Corbin'},{name:'Parmida'},
+  {name:'Kayda'},{name:'Zach'},
+  {name:'Melanie'},{name:'Sincere'},
+  {name:'Trinity'},{name:'Bryce'},
+  {name:'KC'},{name:'Tierra'},
+  {name:'Aniya'}
 ];
 
 let state = { currentUser:null, pinEntry:'', selectedUser:null, selectedKnight:null, selectedVillain:null };
@@ -389,7 +388,7 @@ function renderPickGrid(elId,contestants,role,locked) {
     return `<div class="c-card${sel?' sel-'+role:''}" onclick="${dis?'':'selectPick(\''+role+'\',\''+c.id+'\')'}" style="${dis?'opacity:0.4;cursor:not-allowed':''}">
       <div class="c-avatar" style="background:${avatarColor(c.name)}">${initials(c.name)}</div>
       <div class="c-name">${c.name}</div>
-      <div class="c-sub">${c.partner?'+ '+c.partner:'Single'}</div>
+      
     </div>`;
   }).join('');
 }
@@ -434,7 +433,7 @@ window.loadVotePage = () => {
       <div class="vote-c-top">
         <div class="c-avatar" style="background:${avatarColor(c.name)};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff">${initials(c.name)}</div>
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:600">${c.name}${c.partner?` <span style="font-size:12px;color:var(--text-secondary)">+ ${c.partner}</span>`:' <span style="font-size:12px;color:var(--text-secondary)">Single</span>'}</div>
+          <div style="font-size:14px;font-weight:600">${c.name}</div>
           <div style="font-size:12px;color:var(--text-secondary)">Aww: ${ta} &nbsp;·&nbsp; Ick: ${ti}</div>
         </div>
         ${mv?`<span class="badge ${mv.type==='aww'?'badge-aww':'badge-ick'}">${mv.type==='aww'?'Aww':'Ick'}</span>`:''}
@@ -558,7 +557,7 @@ function renderAdmin() {
   ).join(''):'<div class="empty" style="padding:12px">No episodes yet.</div>';
   document.getElementById('c-list').innerHTML=ldb.contestants.map(c=>
     `<div class="contestant-list-item${c.eliminated?' elim':''}">
-      <span>${c.name}${c.partner?' + '+c.partner:' (single)'}${c.eliminated?' ✗':''}</span>
+      <span>${c.name}${c.eliminated?' ✗':''}</span>
       <button class="admin-btn danger" onclick="deleteContestant('${c.id}')">Remove</button>
     </div>`
   ).join('');
@@ -591,11 +590,10 @@ window.toggleCurrentEp = async id => {
 
 window.addContestant = async () => {
   const nm=document.getElementById('c-name-input').value.trim();
-  const pt=document.getElementById('c-partner-input').value.trim();
   if (!nm) return;
-  const c={id:'c'+Date.now(),name:nm,partner:pt,eliminated:false};
+  const c={id:'c'+Date.now(),name:nm,eliminated:false};
   ldb.contestants.push(c); await pushPath(`/contestants/${c.id}`,c);
-  document.getElementById('c-name-input').value=''; document.getElementById('c-partner-input').value='';
+  document.getElementById('c-name-input').value='';
   toast('Contestant added'); renderAdmin();
 };
 
