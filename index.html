@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Villa Fantasy — Love Island USA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; }
+  :root { --sun:#F5A623;--sun-light:#FEF3DC;--rose:#D4537E;--rose-light:#FBEAF0;--teal:#1D9E75;--teal-light:#E1F5EE;--villain:#993C1D;--villain-light:#FAECE7;--knight:#185FA5;--knight-light:#E6F1FB;--border:#e5e3dc;--border-strong:#ccc;--surface-0:#f5f4f0;--surface-1:#f0efe9;--surface-2:#ffffff;--text-primary:#1a1a18;--text-secondary:#888;--text-muted:#aaa; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1a1a18; color: #f0efe9; }
+    :root { --border:#333;--border-strong:#555;--surface-0:#1a1a18;--surface-1:#242420;--surface-2:#2e2e2a;--text-primary:#f0efe9;--text-secondary:#aaa;--text-muted:#666; }
+  }
+  .app { max-width: 760px; margin: 0 auto; padding: 0 0 80px; }
+  .header { background: var(--sun); padding: 18px 20px 14px; text-align: center; border-bottom: 2px solid #D4880A; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  .header p { font-size: 13px; color: rgba(255,255,255,0.85); margin-top: 2px; }
+  .nav { display: flex; background: var(--surface-2); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .nav button { flex: 1; padding: 13px 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .nav button.active { color: var(--sun); border-bottom-color: var(--sun); }
+  .nav button i { display: block; font-size: 18px; margin-bottom: 3px; }
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+  .auth-wrap { display: flex; align-items: center; justify-content: center; min-height: 70vh; }
+  .auth-card { background: var(--surface-2); border-radius: 16px; border: 0.5px solid var(--border); padding: 32px 28px; width: 100%; max-width: 340px; text-align: center; }
+  .auth-card h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .auth-card p { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+  .user-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .user-btn { padding: 14px 8px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface-1); cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text-primary); transition: all 0.15s; }
+  .user-btn.selected { border-color: var(--sun); background: var(--sun-light); color: #7A4800; }
+  .pin-row { display: flex; gap: 8px; margin-bottom: 16px; justify-content: center; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border-strong); background: transparent; transition: background 0.1s; }
+  .pin-dot.filled { background: var(--sun); border-color: var(--sun); }
+  .keypad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .key { padding: 14px; border-radius: 10px; border: 0.5px solid var(--border); background: var(--surface-1); font-size: 18px; font-weight: 500; cursor: pointer; color: var(--text-primary); transition: all 0.1s; }
+  .key:active { transform: scale(0.95); }
+  .key.del { font-size: 14px; color: var(--text-secondary); }
+  .error-msg { color: #A32D2D; font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+  .badge-knight { background: var(--knight-light); color: var(--knight); }
+  .badge-villain { background: var(--villain-light); color: var(--villain); }
+  .badge-aww { background: var(--teal-light); color: #085041; }
+  .badge-ick { background: var(--villain-light); color: var(--villain); }
+  .pick-section { margin-bottom: 20px; }
+  .pick-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .pick-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .pick-label .dot.knight { background: var(--knight); }
+  .pick-label .dot.villain { background: var(--villain); }
+  .contestant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .c-card { border-radius: 10px; border: 2px solid var(--border); background: var(--surface-1); padding: 10px 10px 8px; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .c-card:hover { border-color: var(--border-strong); }
+  .c-card.sel-knight { border-color: var(--knight); background: var(--knight-light); }
+  .c-card.sel-villain { border-color: var(--villain); background: var(--villain-light); }
+  .c-avatar { width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
+  .c-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .c-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .save-btn { width: 100%; padding: 13px; border-radius: 10px; background: var(--sun); color: #fff; font-size: 15px; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.15s; margin-top: 12px; }
+  .save-btn:hover { opacity: 0.9; }
+  .save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .episode-selector { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .episode-selector select { flex: 1; padding: 8px 12px; border-radius: 8px; border: 0.5px solid var(--border-strong); background: var(--surface-2); color: var(--text-primary); font-size: 14px; }
+  .vote-counter { font-size: 13px; color: var(--text-secondary); }
+  .vote-counter span { font-weight: 600; color: var(--text-primary); }
+  .vote-c-card { border-radius: 10px; border: 0.5px solid var(--border); background: var(--surface-2); padding: 12px; margin-bottom: 10px; }
+  .vote-c-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .vote-btns { display: flex; gap: 8px; }
+  .vote-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-1); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .vote-btn.aww { border-color: var(--teal); color: var(--teal); }
+  .vote-btn.aww.active { background: var(--teal); color: #fff; }
+  .vote-btn.ick { border-color: var(--rose); color: var(--rose); }
+  .vote-btn.ick.active { background: var(--rose); color: #fff; }
+  .vote-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .comment-input { width: 100%; margin-top: 8px; padding: 7px 10px; border-radius: 7px; border: 0.5px solid var(--border); font-size: 13px; background: var(--surface-1); color: var(--text-primary); font-family: inherit; resize: none; }
+  .own-pick-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .feed-item { border-radius: 10px; border: 0.5px solid var(--border); background: var(--surface-2); padding: 12px; margin-bottom: 8px; }
+  .feed-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .feed-who { font-size: 13px; font-weight: 600; }
+  .feed-time { font-size: 11px; color: var(--text-muted); }
+  .feed-comment { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-style: italic; }
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface-2); border-radius: 12px; border: 0.5px solid var(--border); margin-bottom: 8px; }
+  .lb-rank { font-size: 18px; font-weight: 700; width: 28px; text-align: center; }
+  .lb-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
+  .lb-name { font-size: 15px; font-weight: 600; flex: 1; }
+  .lb-score { font-size: 20px; font-weight: 700; color: var(--sun); }
+  .lb-picks { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .admin-section { margin-bottom: 24px; }
+  .admin-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid var(--border); }
+  .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .input-row input, .input-row select { padding: 8px 12px; border-radius: 8px; border: 0.5px solid var(--border-strong); font-size: 14px; font-family: inherit; background: var(--surface-2); color: var(--text-primary); }
+  .input-row input { flex: 1; }
+  .admin-btn { padding: 8px 14px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .admin-btn.add { background: var(--teal); color: #fff; }
+  .admin-btn.danger { background: #E24B4A; color: #fff; }
+  .admin-btn.warn { background: var(--sun); color: #fff; }
+  .contestant-list-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--surface-1); border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+  .contestant-list-item.elim { opacity: 0.5; text-decoration: line-through; }
+  .ep-list-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--surface-1); border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+  .ep-list-item.current { background: var(--sun-light); font-weight: 600; }
+  .empty { text-align: center; padding: 32px 16px; color: var(--text-secondary); font-size: 14px; }
+  .logout-btn { font-size: 13px; color: var(--text-muted); border: none; background: none; cursor: pointer; padding: 4px 0; }
+  .picks-current { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+  .deadline-note { font-size: 12px; color: var(--rose); font-weight: 500; margin-bottom: 4px; }
+  .loading { text-align: center; padding: 40px; color: var(--text-secondary); font-size: 14px; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--sun); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1a1a18; color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>🌴 Villa Fantasy</h1>
+    <p>Love Island USA — Season 8</p>
+  </div>
+  <div class="nav" id="nav" style="display:none">
+    <button class="active" onclick="showPage('picks')" id="nav-picks"><i class="ti ti-shield-heart" aria-hidden="true"></i>Picks</button>
+    <button onclick="showPage('vote')" id="nav-vote"><i class="ti ti-thumb-up" aria-hidden="true"></i>Vote</button>
+    <button onclick="showPage('feed')" id="nav-feed"><i class="ti ti-messages" aria-hidden="true"></i>Feed</button>
+    <button onclick="showPage('leaderboard')" id="nav-lb"><i class="ti ti-trophy" aria-hidden="true"></i>Scores</button>
+    <button onclick="showPage('admin')" id="nav-admin" style="display:none"><i class="ti ti-settings" aria-hidden="true"></i>Admin</button>
+  </div>
+  <div id="page-auth" class="page active" style="padding:0">
+    <div class="auth-wrap"><div class="loading"><span class="spinner"></span>Connecting to the villa...</div></div>
+  </div>
+  <div id="page-picks" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div><div style="font-size:17px;font-weight:700">Weekly picks</div><div class="deadline-note" id="deadline-note"></div></div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+    <div class="picks-current" id="current-picks-display"></div>
+    <div class="pick-section">
+      <div class="pick-label"><span class="dot knight"></span> Your Knight</div>
+      <div class="contestant-grid" id="knight-grid"></div>
+    </div>
+    <div class="pick-section">
+      <div class="pick-label"><span class="dot villain"></span> Your Villain</div>
+      <div class="contestant-grid" id="villain-grid"></div>
+    </div>
+    <button class="save-btn" id="save-picks-btn" onclick="savePicks()">Save picks</button>
+  </div>
+  <div id="page-vote" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:17px;font-weight:700">Cast votes</div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+    <div class="episode-selector">
+      <select id="ep-select" onchange="loadVotePage()"><option value="">Select episode...</option></select>
+    </div>
+    <div id="vote-counter-wrap" style="margin-bottom:12px"></div>
+    <div id="vote-list"></div>
+  </div>
+  <div id="page-feed" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:17px;font-weight:700">Vote feed</div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+    <div class="episode-selector">
+      <select id="feed-ep-select" onchange="loadFeed()"><option value="">All episodes</option></select>
+    </div>
+    <div id="feed-list"></div>
+  </div>
+  <div id="page-leaderboard" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:17px;font-weight:700">Leaderboard</div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+    <div id="lb-list"></div>
+  </div>
+  <div id="page-admin" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:17px;font-weight:700">Admin panel</div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+    <div class="admin-section">
+      <h3>Episodes</h3>
+      <div class="input-row">
+        <input type="text" id="ep-name-input" placeholder="Episode name (e.g. Week 2 Mon)" />
+        <button class="admin-btn add" onclick="addEpisode()">Add</button>
+      </div>
+      <div id="ep-list"></div>
+    </div>
+    <div class="admin-section">
+      <h3>Contestants</h3>
+      <div class="input-row">
+        <input type="text" id="c-name-input" placeholder="Name" />
+        <input type="text" id="c-partner-input" placeholder="Partner (optional)" style="max-width:130px" />
+        <button class="admin-btn add" onclick="addContestant()">Add</button>
+      </div>
+      <div id="c-list"></div>
+    </div>
+    <div class="admin-section">
+      <h3>Eliminations</h3>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">Mark someone eliminated to trigger score changes.</p>
+      <div class="input-row">
+        <select id="elim-select" style="flex:1"></select>
+        <button class="admin-btn danger" onclick="eliminateContestant()">Eliminate</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, get, set, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCxYRAwHQG15OID_X4ywydiH5EE4jdUZek",
+  authDomain: "love-island-fantasy.firebaseapp.com",
+  databaseURL: "https://love-island-fantasy-default-rtdb.firebaseio.com",
+  projectId: "love-island-fantasy",
+  storageBucket: "love-island-fantasy.firebasestorage.app",
+  messagingSenderId: "954154252319",
+  appId: "1:954154252319:web:a0504b91d2a9a620d23d2a"
+};
+
+const fireApp = initializeApp(firebaseConfig);
+const db = getDatabase(fireApp);
+
+const USERS = {
+  OH: { pin: '1717', color: '#D4537E' },
+  CS: { pin: '1234', color: '#1D9E75' },
+  RR: { pin: '4321', color: '#185FA5' },
+  ADMIN: { pin: '3232', color: '#F5A623', isAdmin: true }
+};
+
+const INIT_CONTESTANTS = [
+  {name:'Jen',partner:'Gal'},{name:'Gal',partner:'Jen'},
+  {name:'Caleb',partner:'Jaiden'},{name:'Jaiden',partner:'Caleb'},
+  {name:'Kenzie',partner:'Dylan'},{name:'Dylan',partner:'Kenzie'},
+  {name:'Corbin',partner:'Parmida'},{name:'Parmida',partner:'Corbin'},
+  {name:'Kayda',partner:'Zach'},{name:'Zach',partner:'Kayda'},
+  {name:'Melanie',partner:'Sincere'},{name:'Sincere',partner:'Melanie'},
+  {name:'Trinity',partner:'Bryce'},{name:'Bryce',partner:'Trinity'},
+  {name:'KC',partner:'Tierra'},{name:'Tierra',partner:'KC'},
+  {name:'Aniya',partner:''}
+];
+
+let state = { currentUser:null, pinEntry:'', selectedUser:null, selectedKnight:null, selectedVillain:null };
+let ldb = { contestants:[], episodes:[], picks:{}, votes:{}, scores:{OH:0,CS:0,RR:0} };
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function avatarColor(name) {
+  const colors = ['#D4537E','#1D9E75','#185FA5','#F5A623','#993C1D','#534AB7','#0F6E56'];
+  let h = 0; for (let c of name) h = (h*31+c.charCodeAt(0))%colors.length;
+  return colors[h];
+}
+function initials(name) { return name.slice(0,2).toUpperCase(); }
+
+async function loadFromFirebase() {
+  const snap = await get(ref(db, '/'));
+  if (snap.exists()) {
+    const data = snap.val();
+    ldb.contestants = data.contestants ? Object.values(data.contestants) : [];
+    ldb.episodes = data.episodes ? Object.values(data.episodes) : [];
+    ldb.picks = data.picks || {};
+    ldb.votes = data.votes || {};
+    ldb.scores = data.scores || { OH:0, CS:0, RR:0 };
+  } else {
+    ldb.contestants = INIT_CONTESTANTS.map((c,i) => ({...c, id:'c'+i, eliminated:false}));
+    await pushAll();
+  }
+}
+
+async function pushAll() {
+  const co = {}, eo = {};
+  ldb.contestants.forEach(c => { co[c.id]=c; });
+  ldb.episodes.forEach(e => { eo[e.id]=e; });
+  await set(ref(db,'/'), { contestants:co, episodes:eo, picks:ldb.picks, votes:ldb.votes, scores:ldb.scores });
+}
+
+async function pushPath(path, val) { await set(ref(db, path), val); }
+
+function buildAuthHTML() {
+  return `<div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Welcome to the Villa</h2>
+      <p>Who are you?</p>
+      <div class="user-grid" id="user-grid"></div>
+      <div class="pin-row" id="pin-dots"></div>
+      <div class="keypad" id="keypad"></div>
+      <div class="error-msg" id="auth-error"></div>
+    </div>
+  </div>`;
+}
+
+function renderAuth() {
+  document.getElementById('user-grid').innerHTML = ['OH','CS','RR','ADMIN'].map(u =>
+    `<button class="user-btn${state.selectedUser===u?' selected':''}" onclick="selectUser('${u}')">${u}</button>`
+  ).join('');
+  document.getElementById('pin-dots').innerHTML = [0,1,2,3].map(i =>
+    `<div class="pin-dot${state.pinEntry.length>i?' filled':''}"></div>`
+  ).join('');
+  document.getElementById('keypad').innerHTML = ['1','2','3','4','5','6','7','8','9','','0','⌫'].map(k =>
+    k ? `<button class="key${k==='⌫'?' del':''}" onclick="keyPress('${k}')">${k}</button>` : '<div></div>'
+  ).join('');
+}
+
+window.selectUser = u => { state.selectedUser=u; state.pinEntry=''; document.getElementById('auth-error').textContent=''; renderAuth(); };
+
+window.keyPress = k => {
+  if (!state.selectedUser) { document.getElementById('auth-error').textContent='Select a name first.'; return; }
+  if (k==='⌫') state.pinEntry=state.pinEntry.slice(0,-1);
+  else if (state.pinEntry.length<4) state.pinEntry+=k;
+  if (state.pinEntry.length===4) {
+    if (USERS[state.selectedUser].pin===state.pinEntry) login(state.selectedUser);
+    else { document.getElementById('auth-error').textContent='Wrong PIN. Try again.'; state.pinEntry=''; }
+  }
+  renderAuth();
+};
+
+function login(u) {
+  state.currentUser=u;
+  document.getElementById('page-auth').classList.remove('active');
+  document.getElementById('nav').style.display='flex';
+  if (USERS[u].isAdmin) document.getElementById('nav-admin').style.display='';
+  showPage('picks');
+}
+
+window.logout = () => {
+  state.currentUser=null; state.selectedUser=null; state.pinEntry='';
+  document.getElementById('nav').style.display='none';
+  document.getElementById('nav-admin').style.display='none';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-auth').classList.add('active');
+  renderAuth();
+};
+
+window.showPage = id => {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const navEl = document.getElementById('nav-'+(id==='leaderboard'?'lb':id));
+  if (navEl) navEl.classList.add('active');
+  if (id==='picks') renderPicks();
+  if (id==='vote') renderVotePage();
+  if (id==='feed') renderFeed();
+  if (id==='leaderboard') renderLeaderboard();
+  if (id==='admin') renderAdmin();
+};
+
+function getWeekKey() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate()-day+(day===0?-6:1);
+  const mon = new Date(new Date(now).setDate(diff));
+  return `w${mon.getFullYear()}${String(mon.getMonth()+1).padStart(2,'0')}${String(mon.getDate()).padStart(2,'0')}`;
+}
+
+function isLocked() {
+  const et = new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  return et.getDay()===1 && et.getHours()>=21;
+}
+
+function renderPicks() {
+  const u=state.currentUser, wk=getWeekKey();
+  const myPicks=((ldb.picks[u]||{})[wk])||{};
+  state.selectedKnight=myPicks.knight||null;
+  state.selectedVillain=myPicks.villain||null;
+  const locked=isLocked();
+  document.getElementById('deadline-note').textContent=locked?'🔒 Picks locked — episode in progress':'Lock-in by Monday 9:00 PM ET';
+  const cur=document.getElementById('current-picks-display');
+  if (myPicks.knight||myPicks.villain) {
+    const kc=ldb.contestants.find(c=>c.id===myPicks.knight);
+    const vc=ldb.contestants.find(c=>c.id===myPicks.villain);
+    cur.innerHTML=`<span class="badge badge-knight">Knight: ${kc?kc.name:'—'}</span>&nbsp;&nbsp;<span class="badge badge-villain">Villain: ${vc?vc.name:'—'}</span>`;
+  } else { cur.innerHTML='<span style="color:var(--text-muted)">No picks yet this week</span>'; }
+  const active=ldb.contestants.filter(c=>!c.eliminated);
+  renderPickGrid('knight-grid',active,'knight',locked);
+  renderPickGrid('villain-grid',active,'villain',locked);
+  document.getElementById('save-picks-btn').disabled=locked;
+}
+
+function renderPickGrid(elId,contestants,role,locked) {
+  const other=role==='knight'?'villain':'knight';
+  const ok='selected'+(other.charAt(0).toUpperCase()+other.slice(1));
+  const sk='selected'+(role.charAt(0).toUpperCase()+role.slice(1));
+  document.getElementById(elId).innerHTML=contestants.map(c=>{
+    const dis=c.id===state[ok]||locked;
+    const sel=c.id===state[sk];
+    return `<div class="c-card${sel?' sel-'+role:''}" onclick="${dis?'':'selectPick(\''+role+'\',\''+c.id+'\')'}" style="${dis?'opacity:0.4;cursor:not-allowed':''}">
+      <div class="c-avatar" style="background:${avatarColor(c.name)}">${initials(c.name)}</div>
+      <div class="c-name">${c.name}</div>
+      <div class="c-sub">${c.partner?'+ '+c.partner:'Single'}</div>
+    </div>`;
+  }).join('');
+}
+
+window.selectPick = (role,cid) => { state['selected'+(role==='knight'?'Knight':'Villain')]=cid; renderPicks(); };
+
+window.savePicks = async () => {
+  const u=state.currentUser, wk=getWeekKey();
+  if (!state.selectedKnight||!state.selectedVillain) { alert('Select both a Knight and a Villain first.'); return; }
+  if (!ldb.picks[u]) ldb.picks[u]={};
+  ldb.picks[u][wk]={knight:state.selectedKnight,villain:state.selectedVillain,savedAt:Date.now()};
+  await pushPath(`/picks/${u}/${wk}`,ldb.picks[u][wk]);
+  toast('Picks saved!'); renderPicks();
+};
+
+function renderVotePage() {
+  const sel=document.getElementById('ep-select');
+  sel.innerHTML='<option value="">Select episode...</option>'+ldb.episodes.map(e=>
+    `<option value="${e.id}">${e.name}${e.current?' (current)':''}</option>`
+  ).join('');
+  loadVotePage();
+}
+
+window.loadVotePage = () => {
+  const epId=document.getElementById('ep-select').value;
+  const u=state.currentUser, wk=getWeekKey();
+  const myPicks=((ldb.picks[u]||{})[wk])||{};
+  if (!epId) { document.getElementById('vote-counter-wrap').innerHTML=''; document.getElementById('vote-list').innerHTML='<div class="empty">Select an episode above.</div>'; return; }
+  const epVotes=ldb.votes[epId]||{};
+  const myVotes=Object.values(epVotes).filter(v=>v.user===u);
+  const vc=myVotes.length, hasIck=myVotes.some(v=>v.type==='ick'), hasAww=myVotes.some(v=>v.type==='aww');
+  document.getElementById('vote-counter-wrap').innerHTML=`<div class="vote-counter">Votes used: <span>${vc}/5</span> — at least 1 Ick &amp; 1 Aww required</div>`;
+  const active=ldb.contestants.filter(c=>!c.eliminated);
+  document.getElementById('vote-list').innerHTML=active.map(c=>{
+    const isMyPick=c.id===myPicks.knight||c.id===myPicks.villain;
+    const mv=myVotes.find(v=>v.cid===c.id);
+    const ta=Object.values(epVotes).filter(v=>v.cid===c.id&&v.type==='aww').length;
+    const ti=Object.values(epVotes).filter(v=>v.cid===c.id&&v.type==='ick').length;
+    const awwDis=isMyPick||(vc>=5&&mv?.type!=='aww');
+    const ickDis=isMyPick||(vc>=5&&mv?.type!=='ick');
+    return `<div class="vote-c-card">
+      <div class="vote-c-top">
+        <div class="c-avatar" style="background:${avatarColor(c.name)};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff">${initials(c.name)}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">${c.name}${c.partner?` <span style="font-size:12px;color:var(--text-secondary)">+ ${c.partner}</span>`:' <span style="font-size:12px;color:var(--text-secondary)">Single</span>'}</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Aww: ${ta} &nbsp;·&nbsp; Ick: ${ti}</div>
+        </div>
+        ${mv?`<span class="badge ${mv.type==='aww'?'badge-aww':'badge-ick'}">${mv.type==='aww'?'Aww':'Ick'}</span>`:''}
+      </div>
+      ${isMyPick?`<div class="own-pick-note">Your pick — can't vote on your own contestants</div>`:`
+      <div class="vote-btns">
+        <button class="vote-btn aww${mv?.type==='aww'?' active':''}" ${awwDis&&mv?.type!=='aww'?'disabled':''} onclick="castVote('${epId}','${c.id}','aww')">Aww</button>
+        <button class="vote-btn ick${mv?.type==='ick'?' active':''}" ${ickDis&&mv?.type!=='ick'?'disabled':''} onclick="castVote('${epId}','${c.id}','ick')">Ick</button>
+      </div>
+      <textarea class="comment-input" placeholder="Add a comment (optional)..." rows="2" onblur="saveComment('${epId}','${c.id}',this.value)">${mv?.comment||''}</textarea>`}
+    </div>`;
+  }).join('');
+};
+
+window.castVote = async (epId,cid,type) => {
+  const u=state.currentUser;
+  if (!ldb.votes[epId]) ldb.votes[epId]={};
+  const ev=ldb.votes[epId], vk=`${u}_${cid}`, ex=ev[vk];
+  const myVotes=Object.values(ev).filter(v=>v.user===u);
+  const hasIck=myVotes.some(v=>v.type==='ick'), hasAww=myVotes.some(v=>v.type==='aww');
+  if (ex) {
+    if (ex.type===type) { delete ldb.votes[epId][vk]; await remove(ref(db,`/votes/${epId}/${vk}`)); }
+    else { ev[vk]={...ex,type,ts:Date.now()}; await pushPath(`/votes/${epId}/${vk}`,ev[vk]); }
+  } else {
+    if (myVotes.length>=5) return;
+    if (myVotes.length===4&&!hasIck&&type!=='ick') { alert('Save your last vote for an Ick — you need at least 1!'); return; }
+    if (myVotes.length===4&&!hasAww&&type!=='aww') { alert('Save your last vote for an Aww — you need at least 1!'); return; }
+    const vote={user:u,cid,type,ts:Date.now(),comment:''};
+    ev[vk]=vote; await pushPath(`/votes/${epId}/${vk}`,vote);
+  }
+  recalcScores(); await pushPath('/scores',ldb.scores);
+  loadVotePage();
+};
+
+window.saveComment = async (epId,cid,val) => {
+  const vk=`${state.currentUser}_${cid}`;
+  if ((ldb.votes[epId]||{})[vk]) { ldb.votes[epId][vk].comment=val; await pushPath(`/votes/${epId}/${vk}/comment`,val); }
+};
+
+function recalcScores() {
+  const sc={OH:0,CS:0,RR:0};
+  const weeks=new Set();
+  Object.values(ldb.picks).forEach(wp=>Object.keys(wp).forEach(w=>weeks.add(w)));
+  for (const wk of weeks) {
+    const pw={};
+    for (const u of ['OH','CS','RR']) pw[u]=((ldb.picks[u]||{})[wk])||{};
+    for (const ep of ldb.episodes) {
+      for (const vote of Object.values(ldb.votes[ep.id]||{})) {
+        for (const u of ['OH','CS','RR']) {
+          if (vote.cid===pw[u].knight&&vote.type==='aww') sc[u]++;
+          if (vote.cid===pw[u].villain&&vote.type==='ick') sc[u]++;
+        }
+      }
+    }
+    for (const c of ldb.contestants) {
+      if (c.eliminated&&c.elimWeek===wk) {
+        for (const u of ['OH','CS','RR']) {
+          if (c.id===pw[u].knight) sc[u]-=5;
+          if (c.id===pw[u].villain) sc[u]+=5;
+        }
+      }
+    }
+  }
+  ldb.scores=sc;
+}
+
+function renderFeed() {
+  document.getElementById('feed-ep-select').innerHTML='<option value="">All episodes</option>'+ldb.episodes.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  loadFeed();
+}
+
+window.loadFeed = () => {
+  const epId=document.getElementById('feed-ep-select').value;
+  let all=[];
+  const eps=epId?ldb.episodes.filter(e=>e.id===epId):ldb.episodes;
+  for (const ep of eps) Object.values(ldb.votes[ep.id]||{}).forEach(v=>all.push({...v,epName:ep.name}));
+  all.sort((a,b)=>b.ts-a.ts);
+  const list=document.getElementById('feed-list');
+  if (!all.length) { list.innerHTML='<div class="empty">No votes yet.</div>'; return; }
+  list.innerHTML=all.map(v=>{
+    const c=ldb.contestants.find(x=>x.id===v.cid);
+    return `<div class="feed-item">
+      <div class="feed-top">
+        <span class="feed-who">${v.user} → <span class="badge ${v.type==='aww'?'badge-aww':'badge-ick'}">${v.type==='aww'?'Aww':'Ick'}</span> ${c?c.name:'?'}</span>
+        <span class="feed-time">${v.epName} · ${new Date(v.ts).toLocaleDateString()}</span>
+      </div>
+      ${v.comment?`<div class="feed-comment">"${v.comment}"</div>`:''}
+    </div>`;
+  }).join('');
+};
+
+function renderLeaderboard() {
+  recalcScores();
+  const users=['OH','CS','RR'].sort((a,b)=>ldb.scores[b]-ldb.scores[a]);
+  const medals=['🥇','🥈','🥉'], wk=getWeekKey();
+  document.getElementById('lb-list').innerHTML=users.map((u,i)=>{
+    const pk=((ldb.picks[u]||{})[wk])||{};
+    const kc=ldb.contestants.find(c=>c.id===pk.knight);
+    const vc=ldb.contestants.find(c=>c.id===pk.villain);
+    return `<div class="lb-row">
+      <div class="lb-rank">${medals[i]}</div>
+      <div class="lb-avatar" style="background:${USERS[u].color}">${u}</div>
+      <div style="flex:1">
+        <div class="lb-name">${u}</div>
+        <div class="lb-picks">${kc?'Knight: '+kc.name:'No knight'} · ${vc?'Villain: '+vc.name:'No villain'}</div>
+      </div>
+      <div class="lb-score">${ldb.scores[u]??0}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdmin() {
+  document.getElementById('ep-list').innerHTML=ldb.episodes.length?ldb.episodes.map(e=>
+    `<div class="ep-list-item${e.current?' current':''}">
+      <span>${e.name}</span>
+      <div style="display:flex;gap:6px">
+        <button class="admin-btn ${e.current?'warn':'add'}" onclick="toggleCurrentEp('${e.id}')">${e.current?'Current':'Set current'}</button>
+        <button class="admin-btn danger" onclick="deleteEp('${e.id}')">Delete</button>
+      </div>
+    </div>`
+  ).join(''):'<div class="empty" style="padding:12px">No episodes yet.</div>';
+  document.getElementById('c-list').innerHTML=ldb.contestants.map(c=>
+    `<div class="contestant-list-item${c.eliminated?' elim':''}">
+      <span>${c.name}${c.partner?' + '+c.partner:' (single)'}${c.eliminated?' ✗':''}</span>
+      <button class="admin-btn danger" onclick="deleteContestant('${c.id}')">Remove</button>
+    </div>`
+  ).join('');
+  document.getElementById('elim-select').innerHTML=ldb.contestants.filter(c=>!c.eliminated).map(c=>
+    `<option value="${c.id}">${c.name}</option>`
+  ).join('');
+}
+
+window.addEpisode = async () => {
+  const nm=document.getElementById('ep-name-input').value.trim();
+  if (!nm) return;
+  const ep={id:'ep'+Date.now(),name:nm,current:false};
+  ldb.episodes.push(ep); await pushPath(`/episodes/${ep.id}`,ep);
+  document.getElementById('ep-name-input').value='';
+  toast('Episode added'); renderAdmin();
+};
+
+window.deleteEp = async id => {
+  if (!confirm('Delete this episode?')) return;
+  ldb.episodes=ldb.episodes.filter(e=>e.id!==id); delete ldb.votes[id];
+  await remove(ref(db,`/episodes/${id}`)); await remove(ref(db,`/votes/${id}`));
+  toast('Episode deleted'); renderAdmin();
+};
+
+window.toggleCurrentEp = async id => {
+  ldb.episodes.forEach(e=>{e.current=e.id===id?!e.current:false;});
+  const eo={}; ldb.episodes.forEach(e=>{eo[e.id]=e;}); await pushPath('/episodes',eo);
+  renderAdmin();
+};
+
+window.addContestant = async () => {
+  const nm=document.getElementById('c-name-input').value.trim();
+  const pt=document.getElementById('c-partner-input').value.trim();
+  if (!nm) return;
+  const c={id:'c'+Date.now(),name:nm,partner:pt,eliminated:false};
+  ldb.contestants.push(c); await pushPath(`/contestants/${c.id}`,c);
+  document.getElementById('c-name-input').value=''; document.getElementById('c-partner-input').value='';
+  toast('Contestant added'); renderAdmin();
+};
+
+window.deleteContestant = async id => {
+  if (!confirm('Remove this contestant?')) return;
+  ldb.contestants=ldb.contestants.filter(c=>c.id!==id);
+  await remove(ref(db,`/contestants/${id}`));
+  toast('Contestant removed'); renderAdmin();
+};
+
+window.eliminateContestant = async () => {
+  const id=document.getElementById('elim-select').value;
+  const c=ldb.contestants.find(x=>x.id===id);
+  if (!c||!confirm(`Eliminate ${c.name}? This triggers score changes.`)) return;
+  c.eliminated=true; c.elimWeek=getWeekKey();
+  await pushPath(`/contestants/${c.id}`,c);
+  recalcScores(); await pushPath('/scores',ldb.scores);
+  toast(`${c.name} eliminated`); renderAdmin();
+};
+
+async function init() {
+  await loadFromFirebase();
+  document.getElementById('page-auth').innerHTML=buildAuthHTML();
+  renderAuth();
+  onValue(ref(db,'/'), snap => {
+    if (!snap.exists()) return;
+    const data=snap.val();
+    ldb.contestants=data.contestants?Object.values(data.contestants):[];
+    ldb.episodes=data.episodes?Object.values(data.episodes):[];
+    ldb.picks=data.picks||{}; ldb.votes=data.votes||{}; ldb.scores=data.scores||{OH:0,CS:0,RR:0};
+    const pg=document.querySelector('.page.active')?.id?.replace('page-','');
+    if (pg&&pg!=='auth') {
+      if (pg==='vote') loadVotePage();
+      if (pg==='feed') loadFeed();
+      if (pg==='leaderboard') renderLeaderboard();
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
